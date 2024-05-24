@@ -104,12 +104,6 @@ def tirarExtrato(usuarios):
     else:
         print("Usuário não encontrado! Favor cadastrar o cliente")
 
-    """
-    print("-----------------------------\n")
-    print("Não foram realizadas movimentações." if not extrato else extrato)
-    print(f'Saldo: {saldo:.2f}')
-    print("-----------------------------\n")
-    """
 
 def criarUsuario(usuarios):
     cadastrado = False
