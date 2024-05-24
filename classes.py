@@ -28,6 +28,10 @@ class PessoaFisica(Cliente):
     def nome(self):
         return self._nome
 
+    @property
+    def contas(self):
+        return self._contas
+
     def __str__(self):
         return f"""
             Cliente: {self._nome}
@@ -86,8 +90,6 @@ class Conta:
         return False
 
     def depositar(self, valor):
-        self._saldo = valor
-
         if valor > 0:
             self._saldo += valor
             print("Operação realizada com sucesso!")
@@ -108,9 +110,9 @@ class ContaCorrente(Conta):
     def sacar(self, valor):
         numero_saques = len(
             [transacao for transacao in self.historico.transacoes
-             if transacao["tipo"] == "Saque"]
+             if transacao["Tipo"] == "Saque"]
         )
-        # Implementar verificação de quantos saques foram feitos
+
         excedeuLimite = valor > self._limite
         excedeuSaques = numero_saques >= self._limite_saques
 

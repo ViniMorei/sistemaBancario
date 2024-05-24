@@ -1,43 +1,115 @@
 #Importando as classes declaradas no arquivo classes.py
 from classes import *
 
-#A barra "/" indica que todos os argumentos antes dela são posicionais
-def depositar(saldo, extrato, /):
-    deposito = float(input("Digite o valor a ser depositado na conta: "))
+def depositar(usuarios):
+    # Verifica se o cliente existe
+    cadastrado = False
+    cpf = input('Digite o CPF do cliente que quer depositar: ')
+    for usuario in usuarios:
+        if usuario.cpf == cpf:
+            cliente = usuario
+            cadastrado = True
 
-    if deposito > 0:
-        print("Operação realizada com sucesso.\n")
-        saldo += deposito
-        extrato += f'Depósito: R$ {deposito:.2f}\n'
 
-        return saldo, extrato
-    else:
-        print("Valor inválido\n")
-
-#O asterisco "*" indica que todos os argumentos depois dele são chamados por nome
-def sacar(*, saldo, extrato, limite, numero_saques, LIMITE_SAQUES):
-    if numero_saques >= LIMITE_SAQUES:
-        print("Quantidade diária de saques excedida!")
-    else:
-        saque = float(input(f'Saldo disponível: R$ {saldo:.2f}\nInforme o valor a ser sacado: '))
-
-        if saque > saldo:
-            print("Saldo insuficiente!\n")
-        elif saque > limite:
-            print("Valor excede o limite do saque!\n")
+    if cadastrado:
+        # Caso o cliente esteja cadastrado, verifica se ele possui contas abertas
+        contas = cliente.contas
+        if len(contas) > 0:
+            existe = False
+            cc = int(input(f"Informe o número da conta do(a) cliente {cliente.nome} que irá receber o depósito: "))
+            for conta in contas:
+                # Verifica se a conta informada está vinculada ao cliente
+                if conta.numero == cc:
+                    valor = float(input(f"Informe o valor a ser depositado na conta nº {conta.numero}: R$ "))
+                    deposito = Deposito(valor)
+                    cliente.realizar_transacao(conta, deposito)
+                    return
+            # Mensagem de erro caso a conta não seja encontrada
+            if not existe:
+                print(f"O(A) cliente {cliente.nome} não possui uma conta com o número {cc}, favor tentar novamente.")
+        # Mensagem de erro caso o cliente não tenha contas abertas
         else:
-            print("Operação realizada com sucesso.\n")
-            saldo -= saque
-            numero_saques += 1
-            extrato += f'Saldo: R$ {saldo:.2f}\n'
+            print(f"O(A) cliente {cliente.nome} não possui contas abertas! Favor criar uma e tentar novamente.")
+    # Mensagem de erro caso o cliente não esteja cadastrado
+    else:
+        print("Usuário não encontrado! Favor cadastrar o cliente")
 
-            return saldo, extrato
 
-def tirarExtrato(saldo, /, *, extrato):
+def sacar(usuarios):
+    # Verifica se o cliente existe
+    cadastrado = False
+    cpf = input('Digite o CPF do cliente que quer sacar: ')
+    for usuario in usuarios:
+        if usuario.cpf == cpf:
+            cliente = usuario
+            cadastrado = True
+
+    # Caso o cliente exista, verifica se ele possui contas abertas
+    if cadastrado:
+        contas = cliente.contas
+        if len(contas) > 0:
+            existe = False
+            cc = int(input(f"Informe o número da conta do(a) cliente {cliente.nome} que irá ser sacada: "))
+            for conta in contas:
+                # Verifica se a conta está vinculada ao cliente
+                if conta.numero == cc:
+                    # Solicita o valor e tenta realizar o saque
+                    valor = float(input(f"Informe o valor a ser sacado da conta nº {conta.numero}: R$ "))
+                    saque = Saque(valor)
+                    cliente.realizar_transacao(conta, saque)
+                    return
+                # Mensagem de erro caso a conta não seja encontrada
+            if not existe:
+                print(f"O(A) cliente {cliente.nome} não possui uma conta com o número {cc}, favor tentar novamente.")
+        # Mensagem de erro caso o cliente não possua contas abertas
+        else:
+            print(f"O(A) cliente {cliente.nome} não possui contas abertas! Favor criar uma e tentar novamente.")
+    # Mensagem de erro caso o cliente não esteja cadastrado
+    else:
+        print("Usuário não encontrado! Favor cadastrar o cliente")
+
+def tirarExtrato(usuarios):
+    # Verifica se o cliente existe
+    cadastrado = False
+    cpf = input('Digite o CPF do cliente que quer verificar o extrato: ')
+    for usuario in usuarios:
+        if usuario.cpf == cpf:
+            cliente = usuario
+            cadastrado = True
+
+    # Verifica se o cliente está cadastrado e tem contas abertas
+    if cadastrado:
+        contas = cliente.contas
+        if len(contas) > 0:
+            existe = False
+            cc = int(input(f"Informe o número da conta do(a) cliente {cliente.nome} cujo extrato será verificado: "))
+            for conta in contas:
+                if conta.numero == cc:
+                    transacoes = conta.historico.transacoes
+                    for transacao in transacoes:
+                        print(f"""
+                            {transacao["Tipo"]}: R$ {transacao["Valor"]:.2f}
+                        """)
+                    print(f"""
+                            Saldo: R$ {conta.saldo:.2f}
+                    """)
+                    return
+            #Mensagem de erro caso a conta informada não esteja vinculada ao cliente
+            if not existe:
+                print(f"O(A) cliente {cliente.nome} não possui uma conta com o número {cc}, favor tentar novamente.")
+        # Mensagem de erro caso o cliente não tenha contas abertas
+        else:
+            print(f"O(A) cliente {cliente.nome} não possui contas abertas! Favor criar uma e tentar novamente.")
+    # Mensagem de erro caso o cliente não esteja cadastrado
+    else:
+        print("Usuário não encontrado! Favor cadastrar o cliente")
+
+    """
     print("-----------------------------\n")
     print("Não foram realizadas movimentações." if not extrato else extrato)
     print(f'Saldo: {saldo:.2f}')
     print("-----------------------------\n")
+    """
 
 def criarUsuario(usuarios):
     cadastrado = False
@@ -98,43 +170,33 @@ def listarContas(contas):
 def main():
     menu = """
     Operações:
-    [d] Depositar
-    [s] Sacar
-    [e] Extrato
-    [nu] Novo Usuário
-    [lu] Listar Usuários
-    [nc] Nova Conta
-    [lc] Listar Contas
-    [q] Sair do Programa
+    [d] Depositar               [nu] Novo usuário
+    [s] Sacar                   [nc] Nova conta
+    [e] Extrato                 [lu] Listar usuários
+    [q] Sair do Programa        [lc] Listar contas
     => """
 
     #Lista de usuários e contas, que serão preenchidas com objetos das classes PessoaFisica e ContaCorrente
     usuarios = []
     contas = []
+    numeroConta = 1
 
-    #Variáveis que precisam ser tiradas de circulação:
-    limite = 500
-    numero_saques = 0
-    LIMITE_SAQUES = 3
-    AGENCIA = "0001"
-    numeroConta = 0
-
+    # Execução do programa
     while True:
         opcao = input(menu)
 
         match (opcao.lower()):
             # Depositar
             case "d":
-                saldo, extrato = depositar(saldo, extrato)
+               depositar(usuarios)
 
             # Sacar
             case "s":
-                saldo, extrato = sacar(saldo = saldo, extrato = extrato, limite = limite,
-                                       numero_saques = numero_saques, LIMITE_SAQUES = LIMITE_SAQUES)
+                sacar(usuarios)
 
             # Extrato
             case "e":
-                tirarExtrato(saldo, extrato = extrato)
+                tirarExtrato(usuarios)
 
             # Novo usuário
             case "nu":
@@ -148,11 +210,11 @@ def main():
 
             # Nova conta
             case "nc":
-                numeroConta += 1
                 conta = criarConta(usuarios, numeroConta)
 
                 if conta:
                     contas.append(conta)
+                    numeroConta += 1
 
             # Listar contas
             case "lc":
