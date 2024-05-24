@@ -1,3 +1,7 @@
+#Importando as classes declaradas no arquivo classes.py
+from classes import *
+
+#A barra "/" indica que todos os argumentos antes dela são posicionais
 def depositar(saldo, extrato, /):
     deposito = float(input("Digite o valor a ser depositado na conta: "))
 
@@ -10,6 +14,7 @@ def depositar(saldo, extrato, /):
     else:
         print("Valor inválido\n")
 
+#O asterisco "*" indica que todos os argumentos depois dele são chamados por nome
 def sacar(*, saldo, extrato, limite, numero_saques, LIMITE_SAQUES):
     if numero_saques >= LIMITE_SAQUES:
         print("Quantidade diária de saques excedida!")
@@ -37,40 +42,58 @@ def tirarExtrato(saldo, /, *, extrato):
 def criarUsuario(usuarios):
     cadastrado = False
     cpf = input("Informe o CPF a ser cadastrado: ")
+    # Verifica se o CPF informado já está associado a um cliente
     for usuario in usuarios:
-        if usuario["cpf"] == cpf:
+        if usuario.cpf == cpf:
             print("O CPF informado já foi cadastrado!")
             cadastrado = True
+
+    # Caso o CPF não pertença a nenhum cliente, cria um objeto da classe PessoaFisica
+    # e retorna o objeto, que será adicionado a lista de usuários
     if not cadastrado:
         nome = input("Informe o nome completo do usuário: ")
         nascimento = input("Informe a data de nascimento (dd-mm-aa): ")
-        endereco = input("Informe o endereço do usuário (Logradouro, Número - Bairro - Cidade/Sigla do Estado: ")
+        endereco = input("Informe o endereço do usuário (Logradouro, Número - Bairro - Cidade/Sigla do Estado): ")
 
-        print("Operação realizada com sucesso!\n")
-        return {"cpf": cpf, "nome": nome, "nascimento": nascimento, "endereco": endereco}
+        print("Usuário criado com sucesso!")
+        return PessoaFisica(cpf, nome, nascimento, endereco)
 
-def criarConta(usuarios, AGENCIA, numeroConta):
+def listarUsuarios(usuarios):
+    # Percorre a lista de usuários cadastrados
+    # e executa a função __str__ delas
+    for usuario in usuarios:
+        print(usuario)
+
+def criarConta(usuarios, numeroConta):
     cadastrado = False
     cpf = input("Informe o CPF do cliente a criar uma conta: ")
+    # Verifica se o usuário existe dentro da lista de usuários cadastrados
     for usuario in usuarios:
-        if usuario["cpf"] == cpf:
+        if usuario.cpf == cpf:
+            # Caso o usuário esteja cadastrado, cria uma variável
+            # para armazenar o objeto que irá receber uma conta nova,
+            # e atualiza o valor da variável de controle
+            cliente = usuario
             cadastrado = True
 
+    # Verifica se o usuário está cadastrado,
+    # Pois não existe conta sem usuário
     if cadastrado:
-        print("Operação realizada com sucesso!\n")
-        return {"usuario" : cpf, "agencia" : AGENCIA, "numeroConta" : numeroConta}
+        # Cria uma variável para armazenar um objeto Conta utilizando
+        # o número de conta auto-iterável e o cliente resgatado anteriormente
+        contaNova = ContaCorrente(numeroConta, cliente)
+        cliente.adicionar_conta(contaNova)
+
+        print("Operação realizada com sucesso!")
+        return contaNova.__str__()
     else:
-        print("Usuário não encontrado! Favor cadastrar o cliente.\n")
+        print("Usuário não encontrado! Favor cadastrar o cliente.")
 
 def listarContas(contas):
     for conta in contas:
-        linha = f"""
-            Conta: {conta["numeroConta"]}
-            Usuário: {conta["usuario"]}
-            Agência: {conta["agencia"]}
-            
-        """
-        print(linha)
+        # Aqui a função irá acessar os objetos dentro da lista
+        # "contas" e irá printar a função __str__ delas
+        print(conta)
 
 def main():
     menu = """
@@ -79,46 +102,68 @@ def main():
     [s] Sacar
     [e] Extrato
     [nu] Novo Usuário
+    [lu] Listar Usuários
     [nc] Nova Conta
     [lc] Listar Contas
     [q] Sair do Programa
     => """
 
-    saldo = 0
+    #Lista de usuários e contas, que serão preenchidas com objetos das classes PessoaFisica e ContaCorrente
+    usuarios = []
+    contas = []
+
+    #Variáveis que precisam ser tiradas de circulação:
     limite = 500
-    extrato = ""
     numero_saques = 0
     LIMITE_SAQUES = 3
     AGENCIA = "0001"
-    usuarios = []
-    contas = []
     numeroConta = 0
+
     while True:
         opcao = input(menu)
 
         match (opcao.lower()):
-            case "d":  # Depositar
+            # Depositar
+            case "d":
                 saldo, extrato = depositar(saldo, extrato)
-            case "s":  # Sacar
+
+            # Sacar
+            case "s":
                 saldo, extrato = sacar(saldo = saldo, extrato = extrato, limite = limite,
                                        numero_saques = numero_saques, LIMITE_SAQUES = LIMITE_SAQUES)
-            case "e":  # Extrato
+
+            # Extrato
+            case "e":
                 tirarExtrato(saldo, extrato = extrato)
-            case "nu": #Novo usuário
+
+            # Novo usuário
+            case "nu":
                 usuario = criarUsuario(usuarios)
                 if usuario:
                     usuarios.append(usuario)
-            case "nc": #Nova conta
+
+            # Listar usuários
+            case "lu":
+                listarUsuarios(usuarios)
+
+            # Nova conta
+            case "nc":
                 numeroConta += 1
-                conta = criarConta(usuarios, AGENCIA, numeroConta)
+                conta = criarConta(usuarios, numeroConta)
+
                 if conta:
                     contas.append(conta)
-            case "lc": #Listar contas
+
+            # Listar contas
+            case "lc":
                 listarContas(contas)
-            case "q":  # Encerrar
+
+            # Encerrar
+            case "q":
                 break
 
-            case _:  # Operação inválida
+            # Operação inválida
+            case _:
                 print("Operação inválida, selecione alguma das opções disponíveis.\n")
 
 

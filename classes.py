@@ -20,11 +20,26 @@ class PessoaFisica(Cliente):
         self._cpf = cpf
         self._dataNasc = dataNasc
 
+    @property
+    def cpf(self):
+        return self._cpf
 
+    @property
+    def nome(self):
+        return self._nome
 
+    def __str__(self):
+        return f"""
+            Cliente: {self._nome}
+            CPF: {self._cpf}
+            Data Nascimento: {self._dataNasc}
+            Número de contas: {len(self._contas)}
+            
+            -------------------------------------------
+        """
 
 class Conta:
-    def __init__(self, saldo, numero, cliente, agencia="0001"):
+    def __init__(self, numero, cliente, agencia="0001", saldo = 0):
         self._saldo = saldo
         self._numero = numero
         self._agencia = agencia
@@ -113,6 +128,8 @@ class ContaCorrente(Conta):
             Agência: {self._agencia}
             Conta-corrente: {self._numero}
             Cliente: {self._cliente.nome}
+            
+            -------------------------------------------
         """
 
 
