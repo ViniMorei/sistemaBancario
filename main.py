@@ -1,5 +1,6 @@
-#Importando as classes declaradas no arquivo classes.py
+# Importando as classes declaradas no arquivo classes.py
 from classes import *
+from datetime import datetime
 
 def depositar(usuarios):
     # Verifica se o cliente existe
@@ -23,7 +24,8 @@ def depositar(usuarios):
                     valor = float(input(f"Informe o valor a ser depositado na conta nº {conta.numero}: R$ "))
                     deposito = Deposito(valor)
                     cliente.realizar_transacao(conta, deposito)
-                    return
+
+                    return f"Cliente: {cliente.nome} | Conta: {conta.numero} | Movimentação: Depósito | Valor: R$ {valor:.2f}| Data/Hora: {datetime.now().strftime("%d/%m/%Y %H:%M")}\n"
             # Mensagem de erro caso a conta não seja encontrada
             if not existe:
                 print(f"O(A) cliente {cliente.nome} não possui uma conta com o número {cc}, favor tentar novamente.")
@@ -57,7 +59,8 @@ def sacar(usuarios):
                     valor = float(input(f"Informe o valor a ser sacado da conta nº {conta.numero}: R$ "))
                     saque = Saque(valor)
                     cliente.realizar_transacao(conta, saque)
-                    return
+
+                    return f"Cliente: {cliente.nome} | Conta: {conta.numero} | Movimentação: Saque | Valor: R$ {valor:.2f}| Data/Hora: {datetime.now().strftime("%d/%m/%Y %H:%M")} \n"
                 # Mensagem de erro caso a conta não seja encontrada
             if not existe:
                 print(f"O(A) cliente {cliente.nome} não possui uma conta com o número {cc}, favor tentar novamente.")
@@ -88,7 +91,7 @@ def tirarExtrato(usuarios):
                     transacoes = conta.historico.transacoes
                     for transacao in transacoes:
                         print(f"""
-                            {transacao["Tipo"]}: R$ {transacao["Valor"]:.2f}
+                            {transacao["Tipo"]}: R$ {transacao["Valor"]:.2f} - {transacao["Data/Hora"]}
                         """)
                     print(f"""
                             Saldo: R$ {conta.saldo:.2f}
@@ -175,6 +178,9 @@ def main():
     contas = []
     numeroConta = 1
 
+    # Lista que irá receber strings a serem colocadas no arquivo de log
+    log = []
+
     # Execução do programa
     while True:
         opcao = input(menu)
@@ -182,11 +188,15 @@ def main():
         match (opcao.lower()):
             # Depositar
             case "d":
-               depositar(usuarios)
+               deposito = depositar(usuarios)
+               if deposito:
+                   log.append(deposito)
 
             # Sacar
             case "s":
-                sacar(usuarios)
+                saque = sacar(usuarios)
+                if saque:
+                    log.append(saque)
 
             # Extrato
             case "e":
@@ -216,6 +226,9 @@ def main():
 
             # Encerrar
             case "q":
+                for linha in log:
+                    doc.write(linha)
+                    doc.write("\n")
                 break
 
             # Operação inválida
@@ -224,4 +237,6 @@ def main():
 
 
 #Início do programa
+doc = open("log.txt", "w")
 main()
+doc.close()

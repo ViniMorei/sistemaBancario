@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from datetime import datetime
 
 
 class Cliente:
@@ -148,6 +149,7 @@ class Historico:
             {
                 "Tipo": transacao.__class__.__name__,
                 "Valor": transacao.valor,
+                "Data/Hora": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
         )
 
